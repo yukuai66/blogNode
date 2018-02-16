@@ -20,16 +20,13 @@ router.post(`/register/create`, function(req, res, next) {
   // console.log(db.collection, "db")
   // req.db.collection('user')
   try {
-    req.db.collection('user').insert({'username': 123,'password':333}, function (err, result) {
-      if(!err){
-          res.send({'status':1});
-      }else{
-          res.send({'status':0});
-      }
-      console.log(error, "29")
+    console.log(req)
+    req.db.collection('site').insertOne({name: 'guojc', age: 99, hobby: 'movie'}, function(err, result){
     });
+
+    res.render('page/login');
   } catch (error) {
-    console.log(error,"32")
+    console.log(error)
   }
   
 });
