@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "supervisor  ./bin/www",
-    "start1": "node ./bin/www"
+    "start": "supervisor --harmony ./bin/www",
+    "start-native": "node ./bin/www"
   },
   "dependencies": {
     "body-parser": "~1.18.2",
