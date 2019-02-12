@@ -12,31 +12,54 @@
                         marketing.</h2>
                 </div>
 
-                <div class="blog-post-thumb">
-                    <div class="blog-post-title">
-                        <h3><a href="single-post.html">When do you marry with someone you love in life?</a></h3>
-                    </div>
-                    <div class="blog-post-format">
-                        <span><a href="#"><img src="images/author-image2.jpg" class="img-responsive img-circle"> Leo
-                                Dennis</a></span>
-                        <span><i class="fa fa-date"></i> November 22, 2016</span>
-                        <span><a href="#"><i class="fa fa-comment-o"></i> 23 Comments</a></span>
-                    </div>
-                    <div class="blog-post-des">
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                            labore et
-                            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                            nisi ut aliquip ex
-                            ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-                            dolore eu
-                            fugiat nulla pariatur.</p>
-                        <a href="single-post.html" class="btn btn-default">Continue Reading</a>
-                    </div>
+                <div class="article-container">
                 </div>
 
             </div>
 
         </div>
     </div>
+
+    <div class="blog-post-thumb-modal" style="display:none">
+        <div class="blog-post-title">
+            <h3><a href="article" id="title">title</a></h3>
+        </div>
+        <div class="blog-post-format">
+            <span><i class="fa fa-date" id="creteDateTime"></i>2019-01-01</span>
+            <span><a href="#"><i class="fa fa-comment-o"></i>23评论</a></span>
+        </div>
+        <div class="blog-post-des" id="content">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                labore et
+                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                nisi ut aliquip ex
+                ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+                dolore eu
+                fugiat nulla pariatur.</p>
+            <a href="single-post.html" class="btn btn-default">阅读</a>
+        </div>
+    </div>
 </section>
 <%- include('../layout/footer') %>
+<script>
+    $(function () {
+        $.ajax({
+            url: "article/getList",
+            success: (resp) => {
+                let el = $(".blog-post-thumb-modal"), content = [];
+                if (resp) {
+                    resp.map((data, index) => {
+                        el.find("#title").text(data.title);
+                        el.find("#creteDateTime").text(data.creteDateTime);
+                        el.find("#content").text(data.article);
+                        content.push(el.html())
+                    })
+                }
+
+                let html = content.join("</br>")
+                $(".article-container").html(html);
+                $(".article-container").find("blog-post-thumb-modal").css("display", "block");
+            }
+        })
+    })
+</script>

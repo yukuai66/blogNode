@@ -1,21 +1,26 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var session = require('express-session');
-var MongoClient = require('mongodb').MongoClient;
-var index = require('./routes/index');
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+
+// const MongoClient = require('mongodb').MongoClient;
+
+const index = require('./routes/index');
 // var users = require('./routes/users');
-var article = require('./routes/article');
-var contact = require('./routes/contact');
+const article = require('./routes/article');
+const contact = require('./routes/contact');
 // var connectHistoryApiFallback = require('connect-history-api-fallback');
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+
+//环境变量
+//process.env.NODE_ENV
 
 //由js控制路由
 // app.use('/', connectHistoryApiFallback());
@@ -68,13 +73,13 @@ app.use(session({
 // });
 
 //db
-app.use(function(req,res,next){
-  MongoClient.connect('mongodb://localhost:27017', (err, client) => {
-    req.db = client.db('myblog');
-    next();
-  });
-  // req.db = db;
-});
+// app.use(function(req,res,next){
+//   MongoClient.connect('mongodb://localhost:27017', (err, client) => {
+//     req.db = client.db('myblog');
+//     next();
+//   });
+//   // req.db = db;
+// });
 
 
 //router

@@ -14,6 +14,7 @@
     "express": "~4.15.5",
     "jade": "~1.11.0",
     "mongodb": "^3.0.2",
+    "mongolass": "^4.4.2",
     "mongoskin": "^2.1.0",
     "morgan": "~1.9.0",
     "serve-favicon": "~2.4.5"
