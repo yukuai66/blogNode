@@ -1,0 +1,31 @@
+<%- include('../layout/header') %>
+<%- include('../layout/nav') %>
+
+<div>
+    <div id="myEditor"></div>
+</div>
+
+
+<%- include('../layout/footer') %>
+<link href="/js/umeditor/themes/default/css/umeditor.css" type="text/css" rel="stylesheet">
+<script type="text/javascript" src="/js/umeditor/third-party/jquery.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="/js/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script>
+    $(function () {
+        // $.ajax({
+        //     url: "manage/getList",
+        //     type: "get",
+        //     success: (resp) => {
+        //         // console.log(resp)
+        //         let arr = [];
+        //         resp.map((data, index) => {
+        //             arr.push(`<li>${index}.${data.title}</li>`);
+        //         })
+        //         $('#content-nav').html(arr.join(""));
+        //     }
+        // })
+        var um = UM.getEditor('myEditor');
+    })
+</script>

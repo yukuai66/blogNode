@@ -1,0 +1,24 @@
+<%- include('../layout/header') %>
+<%- include('../layout/nav') %>
+
+<p>文章列表</p>
+<ul id="content-nav">
+</ul>
+
+<%- include('../layout/footer') %>
+<script>
+    $(function () {
+        $.ajax({
+            url: "manage/getList",
+            type: "get",
+            success: (resp) => {
+                // console.log(resp)
+                let arr = [];
+                resp.map((data, index) => {
+                    arr.push(`<li>${index}.${data.title}</li>`);
+                })
+                $('#content-nav').html(arr.join(""));
+            }
+        })
+    })
+</script>

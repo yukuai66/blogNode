@@ -5,13 +5,16 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-
-// const MongoClient = require('mongodb').MongoClient;
+const config = require('config-lite')(__dirname)
+const MongoStore = require('connect-mongo')(session)
 
 const index = require('./routes/index');
-// var users = require('./routes/users');
+const users = require('./routes/users');
 const article = require('./routes/article');
 const contact = require('./routes/contact');
+const manage = require('./routes/manage');
+const edit = require('./routes/edit');
+
 // var connectHistoryApiFallback = require('connect-history-api-fallback');
 const app = express();
 
@@ -42,62 +45,38 @@ app.use(express.static(path.join(__dirname, 'public')));
 //   keepExtensions: true// 保留后缀
 // }))
 
-//session
+// session 中间件
 app.use(session({
-  ////这里的name值得是cookie的name，默认cookie的name是：connect.sid
-    //name: 'hhw',
-    secret: 'keyboard cat', 
-    cookie: ('name', 'value', { path: '/', httpOnly: true,secure: false, maxAge:  60000 }),
-    //重新保存：强制会话保存即使是未修改的。默认为true但是得写上
-    resave: true, 
-    //强制“未初始化”的会话保存到存储。 
-    saveUninitialized: true,  
-    // store: new MongoStore({// 将 session 存储到 mongodb
-    //   url: config.mongodb// mongodb 地址
-    // })
-    
+  name: config.session.key, // 设置 cookie 中保存 session id 的字段名称
+  secret: config.session.secret, // 通过设置 secret 来计算 hash 值并放在 cookie 中，使产生的 signedCookie 防篡改
+  resave: true, // 强制更新 session
+  saveUninitialized: false, // 设置为 false，强制创建一个 session，即使用户未登录
+  cookie: {
+    maxAge: config.session.maxAge// 过期时间，过期后 cookie 中的 session id 自动删除
+  },
+  store: new MongoStore({// 将 session 存储到 mongodb
+    url: config.mongodb// mongodb 地址
+  })
 }))
-// 只需要用express app的use方法将session挂载在‘/’路径即可，这样所有的路由都可以访问到session。
-//可以给要挂载的session传递不同的option参数，来控制session的不同特性 
-// app.get('/', function(req, res, next) {
-//   var sess = req.session//用这个属性获取session中保存的数据，而且返回的JSON数据
-//   if (sess.views) {
-//     sess.views++
-//     res.setHeader('Content-Type', 'text/html')
-//     res.write('<p>欢迎第 ' + sess.views + '次访问       ' + 'expires in:' + (sess.cookie.maxAge / 1000) + 's</p>')
-//     res.end();
-//   } else {
-//     sess.views = 1
-//     res.end('welcome to the session demo. refresh!')
-//   }
-// });
-
-//db
-// app.use(function(req,res,next){
-//   MongoClient.connect('mongodb://localhost:27017', (err, client) => {
-//     req.db = client.db('myblog');
-//     next();
-//   });
-//   // req.db = db;
-// });
-
 
 //router
 app.use('/', index);
 app.use('/index', index);
-// app.use('/users', users);
+app.use('/users', users);
 app.use('/article', article);
 app.use('/contact', contact);
+app.use('/manage', manage);
+app.use('/edit', edit);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

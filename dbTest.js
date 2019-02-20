@@ -12,3 +12,14 @@ MongoClient.connect('mongodb://localhost:27017', (err, client) => {
   });
 });
 
+
+//db
+// app.use(function(req,res,next){
+//   MongoClient.connect('mongodb://localhost:27017', (err, client) => {
+//     req.db = client.db('myblog');
+//     next();
+//   });
+//   // req.db = db;
+// });
+
+
