@@ -19,21 +19,19 @@ router.get('/getList', function (req, res, next) {
 });
 
 router.get('/getArticle', function (req, res, next) {
-  // article.getArticleById().then(function (list) {
-  //   res.json(list);
-  // });
 });
 
 router.post('/addArticle', function (req, res, next) {
-  // console.log(article.updateArticle);
-  article.addArticle().then((list) => {
+  let params = {
+    ...req.body,
+  }
+  console.log(article.addArticle)
+  article.addArticle(params).then((list) => {
+    console.log(list)
     res.json({
       data: "success"
     })
   })
-  // article.getArticleById().then(function (list) {
-  //   res.json(list);
-  // });
 });
 
 module.exports = router;

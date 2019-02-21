@@ -8,10 +8,9 @@ module.exports = {
 
   // 通过用户名获取用户信息
   getUserByName: function getUserByName(name) {
-    // User.create({name: "aaa", password: "1111"}).exec()
+    console.log(User.addCreatedAt)
     return User
       .findOne({ name: name })
-      .addCreatedAt()
-      .exec()
-  }
+      // .addCreatedAt()
+  },
 }

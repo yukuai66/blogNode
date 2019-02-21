@@ -10,7 +10,7 @@
             "name": "Launch Program",
             "program": "${workspaceFolder}/www",
             "args": [            //运行flask命令的参数
-                "supervisor --harmony",
+                "supervisor --harmony ./www",
             ]
         }
     ]
