@@ -11,45 +11,39 @@
         </div>
     </div>
 
-    <!-- <div class="blog-post-thumb-modal" style="display:none">
-        <div class="blog-post-title">
-            <h3><a href="article" id="title">title</a></h3>
-        </div>
-        <div class="blog-post-format">
-            <span><i class="fa fa-date" id="creteDateTime"></i>2019-01-01</span>
-            <span><a href="#"><i class="fa fa-comment-o"></i>23评论</a></span>
-        </div>
-        <div class="blog-post-des" id="content">
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                labore et
-                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex
-                ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-                dolore eu
-                fugiat nulla pariatur.</p>
-            <a href="single-post.html" class="btn btn-default">阅读</a>
-        </div>
-    </div> -->
+    <div class="blog-post-thumb-modal" style="display:none">
+    </div>
 </section>
 <%- include('../layout/footer') %>
 <script>
     $(function () {
+        function getTemplate(data) {
+            var content = `
+                <div class="blog-post-thumb-modal">
+                    <div class="blog-post-title">
+                        <h3><a href="article">${data.title}</a></h3>
+                        <div class="blog-post-format">
+                            <span><i class="fa fa-date"></i>${data.createdDateTime}</span>
+                            <span><a href="#"><i class="fa fa-comment-o"></i>23留言</a></span>
+                        </div>
+                    </div>
+                </div>
+            `
+            return content;
+        }
+
         $.ajax({
             url: "article/getList",
             success: (resp) => {
-                let el = $(".blog-post-thumb-modal"), content = [];
+                let content = [];
                 if (resp) {
                     resp.map((data, index) => {
-                        el.find("#title").text(data.title);
-                        el.find("#creteDateTime").text(data.creteDateTime);
-                        el.find("#content").text(data.article);
-                        content.push(el.html())
+                        content.push(getTemplate(data))
                     })
                 }
 
                 let html = content.join("</br>");
                 $(".article-container").html(html);
-                $(".article-container").find("blog-post-thumb-modal").css("display", "block");
             }
         })
     })

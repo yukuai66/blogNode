@@ -3,17 +3,17 @@
 
 <div class="ui grid">
     <div class="four wide column"></div>
-    <div class="eight wide column">
-        <form class="ui form segment" method="post">
-            <div class="field required">
-                <label>用户名</label>
-                <input placeholder="用户名" type="text" name="name">
+    <div class="eight wide column login-container">
+        <form>
+            <div class="form-group">
+                <label for="name">用户名</label>
+                <input class="form-control" id="name" name="name">
             </div>
-            <div class="field required">
-                <label>密码</label>
-                <input placeholder="密码" type="password" name="password">
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" class="form-control" id="password" name="password">
             </div>
-            <div class="button">登录</div>
+            <span class="btn btn-primary button">登录</span>
         </form>
     </div>
 </div>
@@ -30,8 +30,11 @@
                     password: $("input[name='password']").val(),
                 },
                 success: (resp) => {
-                    // window.location.href = ""
-                    console.log(resp);
+                    console.log(resp)
+                    if (resp.data) {
+                        window.location.href = "/manage"
+                    }
+
                 }
             })
         })

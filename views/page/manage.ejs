@@ -1,24 +1,43 @@
 <%- include('../layout/header') %>
 <%- include('../layout/nav') %>
 
-<p>文章列表</p>
-<ul id="content-nav">
-</ul>
+<div class="manage-container">
+    <button type="button" class="btn btn-primary add-btn" style="float: right;">新增</button>
+    <p class="manage-title">文章列表</p>
+    <div class="list-group manage-list-group" id="content-nav">
+    </div>
+</div>>
 
 <%- include('../layout/footer') %>
 <script>
     $(function () {
+        function getTemplate(data) {
+            var content = `
+                <p class="list-group-item">
+                    <span>${data.title}</span>
+                    <span class="" style="float: right">
+                        <button type="button" class="btn btn-primary">编辑</button>
+                        <button type="button" class="btn btn-danger">删除</button>
+                    </span>
+                </p>
+            `
+            return content;
+        }
+
         $.ajax({
             url: "manage/getList",
             type: "get",
             success: (resp) => {
-                // console.log(resp)
-                let arr = [];
+                let content = [];
                 resp.map((data, index) => {
-                    arr.push(`<li>${index}.${data.title}</li>`);
+                    content.push(getTemplate(data));
                 })
-                $('#content-nav').html(arr.join(""));
+                $('#content-nav').html(content.join(""));
             }
+        })
+
+        $(".add-btn").click(() => {
+            window.location.href = "/edit";
         })
     })
 </script>
