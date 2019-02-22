@@ -17,6 +17,14 @@
 <%- include('../layout/footer') %>
 <script>
     $(function () {
+        function fmtDate(obj) {
+            var date = new Date(obj);
+            var y = 1900 + date.getYear();
+            var m = "0" + (date.getMonth() + 1);
+            var d = "0" + date.getDate();
+            return y + "-" + m.substring(m.length - 2, m.length) + "-" + d.substring(d.length - 2, d.length);
+        }
+
         function getTemplate(data) {
             // const content = `
             //     <div class="blog-post-thumb-modal">
@@ -35,7 +43,7 @@
                     <div class="blog-post-title">
                         <h3><a href="/article/details?_id=${data._id}">${data.title}</a></h3>
                         <div class="blog-post-format">
-                            <span><i class="fa fa-date"></i>${data.createdDateTime}</span>
+                            <span><i class="fa fa-date"></i>${fmtDate(data.createdDate)}</span>
                         </div>
                     </div>
                 </div>
