@@ -19,6 +19,7 @@
 <script type="text/javascript" charset="utf-8" src="/js/ueditor/lang/zh-cn/zh-cn.js"></script>
 <script>
     $(function () {
+        let data;
         let ue = UE.getEditor('myEditor', {
             toolbars: [
                 [
@@ -74,17 +75,53 @@
             autoFloatEnabled: true,
         });
 
+        function GetRequest() {
+            let url = location.search; //获取url中"?"符后的字串
+            let theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                let str = url.substr(1);
+                strs = str.split("&");
+                for (let i = 0; i < strs.length; i++) {
+                    theRequest[strs[i].split("=")[0]] = unescape(strs[i].split("=")[1]);
+                }
+            }
+            return theRequest;
+        }
+
+        let urlParams = GetRequest();
+        if (Object.keys(urlParams).length !== 0) {
+            $.ajax({
+                type: "get",
+                url: "/article/getArticle",
+                data: urlParams,
+                success: (resp) => {
+                    if (resp.data) {
+                        data = resp.data;
+                        ue.ready(() => {
+                            ue.setContent(data.article);
+                        });
+                        $("input[name='title']").val(data.title);
+                    }
+                }
+            })
+        }
+
         $(".save-btn").click(() => {
             let params = {
                 article: ue.getContent(),
                 title: $("input[name='title']").val(),
+                _id: data && data._id,
             }
+
+            let url = Object.keys(urlParams).length !== 0 ? "/article/updateArticle" : "/article/addArticle";
             $.ajax({
                 type: "post",
-                url: "/article/addArticle",
+                url: url,
                 data: params,
                 success: (resp) => {
-                    console.log(respï)
+                    if (resp.data) {
+                        window.location.href = "/manage"
+                    }
                 }
             })
         })

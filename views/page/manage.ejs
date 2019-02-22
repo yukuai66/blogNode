@@ -16,8 +16,8 @@
                 <p class="list-group-item">
                     <span>${data.title}</span>
                     <span class="" style="float: right">
-                        <button type="button" class="btn btn-primary">编辑</button>
-                        <button type="button" class="btn btn-danger">删除</button>
+                        <button type="button" class="btn btn-primary btn-edit" data-id="${data._id}">编辑</button>
+                        <button type="button" class="btn btn-danger btn-remove" data-id="${data._id}">删除</button>
                     </span>
                 </p>
             `
@@ -38,6 +38,25 @@
 
         $(".add-btn").click(() => {
             window.location.href = "/edit";
+        })
+
+        $(document).on("click", ".btn-remove", function () {
+            let _this = this;
+            let params = {
+                _id: $(this).attr("data-id")
+            }
+            $.ajax({
+                url: "article/removeArticle",
+                type: "post",
+                data: params,
+                success: (resp) => {
+                    _this.closest(".list-group-item").remove();
+                }
+            })
+        })
+
+        $(document).on("click", ".btn-edit", function () {
+            window.location.href = `/edit?_id=${$(this).attr("data-id")}`;
         })
     })
 </script>

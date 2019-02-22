@@ -1,16 +1,39 @@
 <%- include('../layout/header') %>
 <%- include('../layout/nav') %>
-<div>文章</div>
-<div>文章</div>
-<div>文章</div>
-<div>文章</div>
-<div>文章</div>
-<div>文章</div>
-<div>文章</div>
+<h2 class="details-title"></h2>
+<div class="details-content"></div>
 
 <%- include('../layout/footer') %>
 <script>
-$(function(){
+    $(function () {
 
-})
+        function GetRequest() {
+            let url = location.search; //获取url中"?"符后的字串
+            let theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                let str = url.substr(1);
+                strs = str.split("&");
+                for (let i = 0; i < strs.length; i++) {
+                    theRequest[strs[i].split("=")[0]] = unescape(strs[i].split("=")[1]);
+                }
+            }
+            return theRequest;
+        }
+
+        let urlParams = GetRequest();
+        if (Object.keys(urlParams).length !== 0) {
+            $.ajax({
+                type: "get",
+                url: "/article/getArticle",
+                data: urlParams,
+                success: (resp) => {
+                    if (resp.data) {
+                        data = resp.data;
+                        $(".details-content").html(data.article);
+                        $(".details-title").text(data.title);
+                    }
+                }
+            })
+        }
+    })
 </script>

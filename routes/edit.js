@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-    res.render('page/edit', { title: '编辑' });
+    res.render('page/edit');
 });
 
 module.exports = router;

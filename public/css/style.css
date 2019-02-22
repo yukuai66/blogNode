@@ -95,7 +95,7 @@ a:hover, a:active, a:focus {
 
 .section-title {
   position: relative;
-  padding-bottom: 62px;
+  padding-bottom: 15px;
   text-align: center;
 }
 
@@ -674,11 +674,19 @@ footer .footer-copyright {
 
 /* index */
 
+.index-container {
+  width: 800px;
+  margin: auto;
+  position: relative;
+  overflow: hidden;
+}
+
 .blur-container-top {
   position: absolute;
   width: 100%;
   z-index: 4;
   height: 30px;
+  top: 0px;
   left: 0;
   background: -webkit-linear-gradient(rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
   background: -o-linear-gradient(rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
@@ -690,7 +698,7 @@ footer .footer-copyright {
   width: 100%;
   z-index: 4;
   height: 30px;
-  bottom: 40px;
+  bottom: 0px;
   left: 0;
   background: -webkit-linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
   background: -o-linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
@@ -699,7 +707,7 @@ footer .footer-copyright {
 
 .index-content {
   height: 200px;
-  width: 300px;
+  width: 400px;
   overflow: hidden;
   position: relative;
   margin: auto;
@@ -747,4 +755,22 @@ footer .footer-copyright {
 
 .edit-container .title-item {
   width: 600px;
+}
+
+/* article-details */
+
+.details-title {
+  text-align: center
+}
+
+.details-content {
+  width: 800px;
+  margin: auto;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 10px;
+}
+
+.details-content p {
+  color: #333;
 }

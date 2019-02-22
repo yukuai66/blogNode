@@ -3,16 +3,17 @@ const Article = require('../lib/mongo').Article
 module.exports = {
     // 获取文章列表
     getArticleList: function getArticleList(title) {
-        return Article.find({})
+        return Article
+            .find({})
     },
 
 
-    // // 根据id获取文章
-    // getArticleById: function getArticleList(title) {
-    //     return Article
-    //         .find({})
-    //         .exec()
-    // },
+    // // 根据参数获取文章
+    getArticle: function getArticle(params = {}) {
+        return Article
+            .findOne(params)
+            .exec()
+    },
 
     //创建文章
     addArticle: (params) => {
@@ -21,19 +22,11 @@ module.exports = {
 
     //更新文章
     updateArticle: (params) => {
-        // return Article.create(params).exec();
+        return Article.findByIdAndUpdate(params._id, { ...params }).exec();
     },
-    // getPosts: function getPosts(author) {
-    //     const query = {}
-    //     if (author) {
-    //         query.author = author
-    //     }
-    //     return Post
-    //         .find(query)
-    //         .populate({ path: 'author', model: 'User' })
-    //         .sort({ _id: -1 })
-    //         .addCreatedAt()
-    //         .contentToHtml()
-    //         .exec()
-    // },
+
+    //删除文章
+    removeArticle: (params) => {
+        return Article.deleteOne(params).exec();
+    },
 }

@@ -4,7 +4,7 @@
 <!-- Home Section -->
 
 <section id="home">
-    <div class="container">
+    <!-- <div class="container">
         <div class="row">
 
             <div class="col-md-12 col-sm-12">
@@ -30,6 +30,31 @@
                 <hr>
             </div>
 
+        </div>
+    </div> -->
+    <div class="index-container">
+        <div class="blur-container-top""></div>
+        <div class=" blur-container-bottom""></div>
+        <div class="index-content">
+            <div class="index-content-in">
+                <p>改完这个bug我就下班</p>
+                <p>这个需求提到日程上</p>
+                <p>我本地看没问题啊?</p>
+                <p>清个缓存试试</p>
+                <p>改完这波肯定没bug了</p>
+                <p>这是个小改动,直接发线上吧</p>
+                <p>Object not found</p>
+                <p>人生一大错觉:github上的代码都是能跑起来的</p>
+                <p>带薪编译</p>
+                <p>工作使我快乐</p>
+                <p>我爱工作</p>
+                <p>什么?修电脑?</p>
+                <p>这个世界上只有10种人,会二进制的和不会二进制的</p>
+                <p>这不是bug,是feature</p>
+                <p>截止到今天,还没有一个90后程序员活过30岁</p>
+                <p>命名不规范,同事两行泪</p>
+                <p>mysql从入门到删库</p>
+            </div>
         </div>
     </div>
 </section>
@@ -133,11 +158,16 @@
 
 <%- include('../layout/footer') %>
 <script>
-    // $(function(){
-    //     let top = 0;
-    // setInterval(() => {
-    //     $("index-content-in").css("top")
-    // }, 100)
-    // })
-    
+    $(function () {
+        let top = 0;
+        let height = $(".index-content-in").height();
+
+        setInterval(() => {
+            $(".index-content-in").css("top", `${top--}px`)
+            if (top < -height) {
+                top = 200;
+            }
+        }, 100)
+    })
+
 </script>

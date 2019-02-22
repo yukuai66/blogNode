@@ -19,6 +19,14 @@ router.get('/getList', function (req, res, next) {
 });
 
 router.get('/getArticle', function (req, res, next) {
+  let params = {
+    ...req.query
+  }
+  article.getArticle(params).then(function (item) {
+    res.json({
+      data: item
+    });
+  });
 });
 
 router.post('/addArticle', function (req, res, next) {
@@ -33,5 +41,29 @@ router.post('/addArticle', function (req, res, next) {
     })
   })
 });
+
+router.post("/removeArticle", (req, res, next) => {
+  let params = {
+    ...req.body,
+  }
+  article.removeArticle(params).then((list) => {
+    console.log(list)
+    res.json({
+      data: "success"
+    })
+  })
+})
+
+router.post("/updateArticle", (req, res, next) => {
+  let params = {
+    ...req.body,
+  }
+  article.updateArticle(params).then((list) => {
+    console.log(list)
+    res.json({
+      data: "success"
+    })
+  })
+})
 
 module.exports = router;
