@@ -1,9 +1,12 @@
 # blogNode
 
-1.npm install  
-2.npm start  
-or  
-node ./www  
+npm install  
+
+Pm2 start 
+npm run start-prod
+
+Local start
+npm start  
   
 project structure  
     .  
@@ -15,5 +18,6 @@ project structure
     ├── routes                  # Route files  
     ├── views                   # Template file  
     ├── app.js                  # Express configuration   
+    ├── ecosystem.config.js     # pm2 configuration   
     └── www                     # The entrance  
 
