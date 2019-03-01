@@ -14,116 +14,16 @@
 
 <%- include('../layout/footer') %>
 
-<script type="text/javascript" charset="utf-8" src="/js/ueditor/ueditor.config.js"></script>
-<script type="text/javascript" charset="utf-8" src="/js/ueditor/ueditor.all.min.js"> </script>
-<script type="text/javascript" charset="utf-8" src="/js/ueditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/wEditor/wangEditor.min.js"></script>
 <script>
     $(function () {
-        let data;
-        let ue = UE.getEditor('myEditor', {
-            toolbars: [
-                [
-                    'anchor', //锚点
-                    'undo', //撤销
-                    'redo', //重做
-                    'bold', //加粗
-                    'indent', //首行缩进
-                    'italic', //斜体
-                    'underline', //下划线
-                    'strikethrough', //删除线
-                    'source', //源代码
-                    'blockquote', //引用
-                    'pasteplain', //纯文本粘贴模式
-                    'selectall', //全选
-                    'preview', //预览
-                    'horizontal', //分隔线
-                    'removeformat', //清除格式
-                    'unlink', //取消链接
-                    'mergeright', //右合并单元格
-                    'mergedown', //下合并单元格
-                    'inserttitle', //插入标题
-                    'cleardoc', //清空文档
-                    'insertcode', //代码语言
-                    'fontfamily', //字体
-                    'fontsize', //字号
-                    'paragraph', //段落格式
-                    'simpleupload', //单图上传
-                    'insertimage', //多图上传
-                    'link', //超链接
-                    'spechars', //特殊字符
-                    'justifyleft', //居左对齐
-                    'justifyright', //居右对齐
-                    'justifycenter', //居中对齐
-                    'justifyjustify', //两端对齐
-                    'forecolor', //字体颜色
-                    'backcolor', //背景色
-                    // 'rowspacingtop', //段前距
-                    // 'rowspacingbottom', //段后距
-                    // 'pagebreak', //分页
-                    // 'insertframe', //插入Iframe
-                    'imagecenter', //居中
-                    'lineheight', //行间距
-                    'edittip ', //编辑提示
-                    'customstyle', //自定义标题
-                    'autotypeset', //自动排版
-                    'background', //背景
-                    // 'inserttable', //插入表格
-                    // 'charts', // 图表
-                ]
-            ],
-            autoHeightEnabled: true,
-            autoFloatEnabled: true,
-        });
-
-        function GetRequest() {
-            let url = location.search; //获取url中"?"符后的字串
-            let theRequest = new Object();
-            if (url.indexOf("?") != -1) {
-                let str = url.substr(1);
-                strs = str.split("&");
-                for (let i = 0; i < strs.length; i++) {
-                    theRequest[strs[i].split("=")[0]] = unescape(strs[i].split("=")[1]);
-                }
-            }
-            return theRequest;
+        const editor = new window.wangEditor('#myEditor');
+        editor.customConfig.uploadImgServer = '/upload/image';
+        editor.customConfig.uploadFileName = 'imageFile';
+        editor.customConfig.customAlert = function (info) {
+            // info 是需要提示的内容
+            console.log('自定义提示：' + info)
         }
-
-        let urlParams = GetRequest();
-        if (Object.keys(urlParams).length !== 0) {
-            $.ajax({
-                type: "get",
-                url: "/article/getArticle",
-                data: urlParams,
-                success: (resp) => {
-                    if (resp.data) {
-                        data = resp.data;
-                        ue.ready(() => {
-                            ue.setContent(data.article);
-                        });
-                        $("input[name='title']").val(data.title);
-                    }
-                }
-            })
-        }
-
-        $(".save-btn").click(() => {
-            let params = {
-                article: ue.getContent(),
-                title: $("input[name='title']").val(),
-                _id: data && data._id,
-            }
-
-            let url = Object.keys(urlParams).length !== 0 ? "/article/updateArticle" : "/article/addArticle";
-            $.ajax({
-                type: "post",
-                url: url,
-                data: params,
-                success: (resp) => {
-                    if (resp.data) {
-                        window.location.href = "/manage"
-                    }
-                }
-            })
-        })
+        editor.create()
     })
 </script>

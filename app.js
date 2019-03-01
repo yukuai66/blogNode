@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const config = require('config-lite')(__dirname)
 const MongoStore = require('connect-mongo')(session)
+const multer = require('multer');
 
 const index = require('./routes/index');
 const users = require('./routes/users');
@@ -14,6 +15,7 @@ const article = require('./routes/article');
 const contact = require('./routes/contact');
 const manage = require('./routes/manage');
 const edit = require('./routes/edit');
+const upload = require('./routes/upload');
 
 // var connectHistoryApiFallback = require('connect-history-api-fallback');
 const app = express();
@@ -57,7 +59,7 @@ app.use(session({
   store: new MongoStore({// 将 session 存储到 mongodb
     url: config.mongodb.url// mongodb 地址
   })
-}))
+}));
 
 //router
 app.use('/', index);
@@ -67,6 +69,7 @@ app.use('/article', article);
 app.use('/contact', contact);
 app.use('/manage', manage);
 app.use('/edit', edit);
+app.use('/upload', upload);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
