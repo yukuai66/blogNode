@@ -11,7 +11,11 @@ const upload = multer({
 
 router.post('/image', upload.single("imageFile"), function (req, res, next) {
     let newImagePath = `public/uploadFile/${req.file.filename}_${moment().format('X')}_${req.file.originalname}`
-    fs.rename(req.file.path, newImagePath)
+    fs.rename(req.file.path, newImagePath, (err) => {
+        if (err) {
+            throw err;
+        }
+    })
     let obj = {
         // errno 即错误代码，0 表示没有错误。
         //       如果有错误，errno != 0，可通过下文中的监听函数 fail 拿到该错误码进行自定义处理
