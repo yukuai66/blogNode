@@ -11,7 +11,7 @@ const upload = multer({
 
 router.post('/image', upload.single("imageFile"), function (req, res, next) {
     let newImagePath = `public/uploadFile/${req.file.filename}_${moment().format('X')}_${req.file.originalname}`
-    fs.rename(req.file.path, newImagePath, (err) => {
+    fs.rename(req.file.path, newImagePath, function (err) {
         if (err) {
             throw err;
         }
