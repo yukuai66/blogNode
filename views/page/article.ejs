@@ -6,6 +6,8 @@
         <div class="row">
             <div class="col-md-offset-1 col-md-10 col-sm-12">
                 <div class="article-container">
+                    <div class="article-content-container"></div>
+                    <div class="article-page-container"> </div>
                 </div>
             </div>
         </div>
@@ -15,55 +17,72 @@
     </div>
 </section>
 <%- include('../layout/footer') %>
+<script src="/js/module/pagination.js"></script>
+<script src="/js/util.js"></script>
+
 <script>
     $(function () {
-        function fmtDate(obj) {
-            var date = new Date(obj);
-            var y = 1900 + date.getYear();
-            var m = "0" + (date.getMonth() + 1);
-            var d = "0" + date.getDate();
-            return y + "-" + m.substring(m.length - 2, m.length) + "-" + d.substring(d.length - 2, d.length);
-        }
+        class View {
+            constructor() {
+                this.state = {
 
-        function getTemplate(data) {
-            // const content = `
-            //     <div class="blog-post-thumb-modal">
-            //         <div class="blog-post-title">
-            //             <h3><a href="article">${data.title}</a></h3>
-            //             <div class="blog-post-format">
-            //                 <span><i class="fa fa-date"></i>${data.createdDateTime}</span>
-            //                 <span><i class="fa fa-comment-o"></i>23留言</span>
-            //             </div>
-            //         </div>
-            //     </div>
-            // `
-
-            var content = `
-                <div class="blog-post-thumb-modal">
-                    <div class="blog-post-title">
-                        <h3><a href="/article/details?_id=${data._id}">${data.title}</a></h3>
-                        <div class="blog-post-format">
-                            <span><i class="fa fa-date"></i>${fmtDate(data.createDate)}</span>
-                        </div>
-                    </div>
-                </div>
-            `
-            return content;
-        }
-
-        $.ajax({
-            url: "article/getList",
-            success: (resp) => {
-                let content = [];
-                if (resp) {
-                    resp.map((data, index) => {
-                        content.push(getTemplate(data))
-                    })
                 }
-
-                let html = content.join("</br>");
-                $(".article-container").html(html);
+                this.initial();
             }
-        })
+
+            async initial() {
+                let resp = await this.getData();
+                let pageConfig = { ...resp, list: null };
+                delete pageConfig.list;
+                this.pagination = new Pagination({
+                    container: $(".article-page-container"),
+                    pageConfig: pageConfig,
+                    togglePage: this.togglePage
+                });
+                this.data = resp.list;
+                this.render();
+            }
+
+            togglePage = (page) => {
+                this.getData({ limit: 10, page: page }).then(resp => {
+                    this.data = resp.list;
+                    this.render();
+                });
+            }
+
+            getData = (params = { limit: 10, page: 1 }) => {
+                return new Promise((resolve) => {
+                    $.ajax({
+                        url: "article/getList",
+                        data: params,
+                        success: (resp) => {
+                            resolve(resp)
+                        }
+                    })
+                })
+            }
+
+            render = () => {
+                let data = this.data,
+                    contentArr = []
+                data.map((data, index) => {
+                    let content = `
+                        <div class="blog-post-thumb-modal">
+                            <div class="blog-post-title">
+                                <h3><a href="/article/details?_id=${data._id}">${data.title}</a></h3>
+                                <div class="blog-post-format">
+                                    <span><i class="fa fa-date"></i>${$.formatDateTime(data.createDate)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                    contentArr.push(content)
+                })
+
+                $(".article-content-container").html(contentArr.join(""));
+            }
+        }
+
+        let view = new View();
     })
 </script>

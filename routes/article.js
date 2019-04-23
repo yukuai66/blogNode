@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const article = require('../models/article');
+const generatePaginate = require('../middlewares/paginate').generatePaginate;
 
 /* GET article page. */
 router.get('/', function (req, res, next) {
@@ -12,9 +13,12 @@ router.get('/details', function (req, res, next) {
   res.render('page/article-details');
 });
 
-router.get('/getList', function (req, res, next) {
-  article.getArticleList().then(function (list) {
-    res.json(list);
+router.get('/getList', generatePaginate, function (req, res, next) {
+  let params = {
+    ...req.query
+  }
+  article.getArticleList(params).then(function (data) {
+    res.json(data);
   });
 });
 
@@ -33,9 +37,7 @@ router.post('/addArticle', function (req, res, next) {
   let params = {
     ...req.body,
   }
-  console.log(article.addArticle)
   article.addArticle(params).then((list) => {
-    console.log(list)
     res.json({
       data: "success"
     })
@@ -47,7 +49,6 @@ router.post("/removeArticle", (req, res, next) => {
     ...req.body,
   }
   article.removeArticle(params).then((list) => {
-    console.log(list)
     res.json({
       data: "success"
     })
@@ -59,7 +60,6 @@ router.post("/updateArticle", (req, res, next) => {
     ...req.body,
   }
   article.updateArticle(params).then((list) => {
-    console.log(list)
     res.json({
       data: "success"
     })

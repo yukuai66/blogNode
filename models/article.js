@@ -1,23 +1,19 @@
-const Article = require('../lib/mongo').Article
+const Article = require('../lib/mongo').Article;
 
 module.exports = {
     // 获取文章列表
-    getArticleList: function getArticleList(title) {
-        return Article
-            .find({})
+    getArticleList: function getArticleList(params) {
+        return Article.paginate({}, params);
     },
 
-
-    // // 根据参数获取文章
+    // 根据参数获取文章
     getArticle: function getArticle(params = {}) {
-        return Article
-            .findOne(params)
-            .exec()
+        return Article.findOne(params).exec();
     },
 
     //创建文章
     addArticle: (params) => {
-        return Article.create(params)
+        return Article.create(params);
     },
 
     //更新文章

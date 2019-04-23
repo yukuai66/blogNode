@@ -9,5 +9,15 @@ module.exports = {
     url: 'mongodb://47.96.131.253:27017/myblog',
   },
   viewPath: "page/",
-  layoutPath: "layout/"
+  layoutPath: "layout/",
+  customDBLabel: {
+    totalDocs: 'total',
+    docs: 'list',
+    limit: 'perPage',
+    page: 'pageNo',
+    nextPage: 'nextPage',
+    prevPage: 'prevPage',
+    totalPages: 'pageCount',
+    // pagingCounter: 'slNo',
+  }
 }

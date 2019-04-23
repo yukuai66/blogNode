@@ -6,57 +6,118 @@
     <p class="manage-title">文章列表</p>
     <div class="list-group manage-list-group" id="content-nav">
     </div>
+    <div class="article-page-container"></div>
 </div>
 
 <%- include('../layout/footer') %>
+<script src="/js/module/pagination.js"></script>
+<script src="/js/util.js"></script>
+
 <script>
     $(function () {
-        function getTemplate(data) {
-            var content = `
-                <p class="list-group-item">
-                    <span>${data.title}</span>
-                    <span class="" style="float: right">
-                        <button type="button" class="btn btn-primary btn-edit" data-id="${data._id}">编辑</button>
-                        <button type="button" class="btn btn-danger btn-remove" data-id="${data._id}">删除</button>
-                    </span>
-                </p>
-            `
-            return content;
+        class View {
+            constructor() {
+                this.container = $(".manage-container");
+                this.initial();
+            }
+
+            async initial() {
+                let resp = await this.getData();
+                let pageConfig = { ...resp, list: null };
+                delete pageConfig.list;
+                this.pagination = new Pagination({
+                    container: $(".article-page-container"),
+                    pageConfig: pageConfig,
+                    togglePage: this.togglePage
+                });
+                this.data = resp.list;
+                this.render();
+                this.bindEvent();
+            }
+
+            togglePage = (page) => {
+                this.getData({ limit: 10, page: page }).then(resp => {
+                    this.data = resp.list;
+                    this.render();
+                });
+            }
+
+            getData = (params = { limit: 10, page: 1 }) => {
+                return new Promise((resolve) => {
+                    $.ajax({
+                        url: "article/getList",
+                        type: "get",
+                        data: params,
+                        success: (resp) => {
+                            resolve(resp)
+                        }
+                    })
+                })
+            }
+
+            bindEvent = () => {
+                this.container.find(".add-btn").click(() => {
+                    this.addArticle();
+                })
+
+                this.container.on("click", ".btn-remove", (event) => {
+                    this.deleteArticle(event);
+                })
+
+                this.container.on("click", ".btn-edit", (event) => {
+                    this.editArticle(event);
+                })
+            }
+
+            addArticle = () => {
+                window.location.href = "/edit";
+            }
+
+            deleteArticle = (event) => {
+                let $el = $(event.target);
+                let params = {
+                    _id: $el.attr("data-id")
+                }
+
+                $.ajax({
+                    url: "article/removeArticle",
+                    type: "post",
+                    data: params,
+                    success: (resp) => {
+                        $el.closest(".list-group-item").remove();
+                        this.getData({ limit: 10, page: this.pagination.state.page }).then(resp => {
+                            this.data = resp.list;
+                            this.render();
+                        })
+                    }
+                })
+            }
+
+            editArticle = () => {
+                let $el = $(event.target);
+                window.location.href = `/edit?_id=${$el.attr("data-id")}`;
+            }
+
+            render = () => {
+                let data = this.data,
+                    contentArr = []
+                data.map((data, index) => {
+                    let content = `
+                        <p class="list-group-item">
+                            <span>${$.formatDateTime(data.createDate)} ${data.title}</span>
+                            <span class="" style="float: right">
+                                <button type="button" class="btn btn-primary btn-edit" data-id="${data._id}">编辑</button>
+                                <button type="button" class="btn btn-danger btn-remove" data-id="${data._id}">删除</button>
+                            </span>
+                        </p>
+                    `
+                    contentArr.push(content)
+                })
+
+                $(".list-group.manage-list-group").html(contentArr.join(""));
+            }
         }
 
-        $.ajax({
-            url: "manage/getList",
-            type: "get",
-            success: (resp) => {
-                let content = [];
-                resp.map((data, index) => {
-                    content.push(getTemplate(data));
-                })
-                $('#content-nav').html(content.join(""));
-            }
-        })
-
-        $(".add-btn").click(() => {
-            window.location.href = "/edit";
-        })
-
-        $(document).on("click", ".btn-remove", function () {
-            let _this = this;
-            let params = {
-                _id: $(this).attr("data-id")
-            }
-            $.ajax({
-                url: "article/removeArticle",
-                type: "post",
-                data: params,
-                success: (resp) => {
-                    _this.closest(".list-group-item").remove();
-                }
-            })
-        })
-
-        $(document).on("click", ".btn-edit", function () {
-            window.location.href = `/edit?_id=${$(this).attr("data-id")}`;
-        })
+        let view = new View();
     })
 </script>
