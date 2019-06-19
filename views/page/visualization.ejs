@@ -1,0 +1,232 @@
+<%- include('../layout/header') %>
+<%- include('../layout/nav') %>
+
+<div class="container visualization-container">
+
+</div>
+
+<%- include('../layout/footer') %>
+
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://webapi.amap.com/maps?v=1.4.14&key=f4c6d964778bba356e9f0c9b7d39c1a2"></script>
+<script src="https://webapi.amap.com/loca?v=1.3.0&key=f4c6d964778bba356e9f0c9b7d39c1a2"></script>
+<script src="https://a.amap.com/Loca/static/mock/bj_heat_grid.js"></script>
+
+<script>
+    $(function () {
+        var dataJSON = [
+            {
+                "title": "梦想新天地",
+                "address": "[ 岳麓 梅溪湖 ] 纳秋路26号（步步高梅溪新天地南侧）",
+                "saleStatus": "forsale",
+                "saleStatusText": "待售",
+                "saleType": "wuyetp",
+                "saleTypeText": "商住",
+                "doorModel": "商住",
+                "area": "建筑面积：50.31-83.46㎡",
+                "price": "",
+                "aroundPrice": "13500",
+                "realAddress": "步步高公寓对面",
+                "gridcode": "4212263802",
+                "location": "112.861339,28.193472"
+            },
+            {
+                "title": "长沙恒大文化旅游城",
+                "address": "[ 岳麓 麓南含浦 ] 潭州大道二段528号",
+                "saleStatus": "onsale",
+                "saleStatusText": "在售",
+                "saleType": "wuyetp",
+                "saleTypeText": "住宅",
+                "doorModel": "2室",
+                "area": "3室",
+                "price": "10000",
+                "aroundPrice": "",
+                "realAddress": "潭州大道二段528号",
+                "gridcode": "4212077211",
+                "location": "112.907175,28.063627"
+            },
+            {
+                "title": "长房星珑湾",
+                "address": "[ 望城 斑马湖 ] 长沙市望城经开区",
+                "saleStatus": "onsale",
+                "saleStatusText": "在售",
+                "saleType": "wuyetp",
+                "saleTypeText": "住宅",
+                "doorModel": "3室",
+                "area": "4室",
+                "price": "5400",
+                "aroundPrice": "",
+                "realAddress": "马桥河路",
+                "gridcode": "4212369702",
+                "location": "112.846312,28.326792"
+            },
+            {
+                "title": "长房云时代",
+                "address": "[ 岳麓 市府 ] 岳麓西大道158号",
+                "saleStatus": "forsale",
+                "saleStatusText": "待售",
+                "saleType": "wuyetp",
+                "saleTypeText": "住宅",
+                "doorModel": "3室",
+                "area": "4室",
+                "price": "",
+                "aroundPrice": "10000",
+                "realAddress": "麓谷街道岳麓大道先导控股加油站前行100米",
+                "gridcode": "4212277111",
+                "location": "112.895491,28.227851"
+            },
+            {
+                "title": "建发央著",
+                "address": "[ 岳麓 梅溪湖 ] 长沙市岳麓区梅溪湖映日路以东雪松路以...",
+                "saleStatus": "onsale",
+                "saleStatusText": "在售",
+                "saleType": "wuyetp",
+                "saleTypeText": "住宅",
+                "doorModel": "3室",
+                "area": "4室",
+                "price": "18000",
+                "aroundPrice": "",
+                "realAddress": "梅溪湖路与连湖九路交叉口西150米",
+                "gridcode": "4212272001",
+                "location": "112.878274,28.184672"
+            },
+            {
+                "title": "中梁·云麓传奇",
+                "address": "[ 岳麓 梅溪湖 ] 高新二小旁",
+                "saleStatus": "forsale",
+                "saleStatusText": "待售",
+                "saleType": "wuyetp",
+                "saleTypeText": "住宅",
+                "doorModel": "3室",
+                "area": "建筑面积：115-119.9㎡",
+                "price": "",
+                "aroundPrice": "11000",
+                "realAddress": "谷苑路与麓开路交汇处西南侧",
+                "gridcode": "4212265712",
+                "location": "112.847614,28.213074"
+            },
+            {
+                "title": "长房东旭国际",
+                "address": "[ 雨花 武广新城 ] 劳动东路与花侯路交汇处西北角",
+                "saleStatus": "forsale",
+                "saleStatusText": "待售",
+                "saleType": "wuyetp",
+                "saleTypeText": "住宅",
+                "doorModel": "3室",
+                "area": "4室",
+                "price": "",
+                "aroundPrice": "12500",
+                "realAddress": "劳动东路与花候路交叉口西北50米",
+                "gridcode": "4213108422",
+                "location": "113.059724,28.158330"
+            },
+            {
+                "title": "文景领秀二期",
+                "address": "[ 天心 新开铺 ] 书院南路与友谊西路交汇处东南角（友谊...",
+                "saleStatus": "onsale",
+                "saleStatusText": "在售",
+                "saleType": "wuyetp",
+                "saleTypeText": "住宅",
+                "doorModel": "2室",
+                "area": "3室",
+                "price": "9480",
+                "aroundPrice": "",
+                "realAddress": "友谊西路779号(友谊路和书院路交汇处西南角)",
+                "gridcode": "4212174721",
+                "location": "112.968949,28.124421"
+            },
+            {
+                "title": "绿地长沙城际空间站",
+                "address": "[ 雨花 武广新城 ] 花侯路与曲塘路交汇处",
+                "saleStatus": "onsale",
+                "saleStatusText": "在售",
+                "saleType": "wuyetp",
+                "saleTypeText": "住宅",
+                "doorModel": "3室",
+                "area": "4室",
+                "price": "12000",
+                "aroundPrice": "",
+                "realAddress": "花候路与曲塘路交汇处",
+                "gridcode": "4213107422",
+                "location": "113.059462,28.149286"
+            },
+            {
+                "title": "邦盛山·水岸御园三期",
+                "address": "[ 岳麓 洋湖垸 ] 含浦中路,近联丰路",
+                "saleStatus": "forsale",
+                "saleStatusText": "待售",
+                "saleType": "wuyetp",
+                "saleTypeText": "住宅",
+                "doorModel": "3室",
+                "area": "4室",
+                "price": "",
+                "aroundPrice": "8000",
+                "realAddress": "联丰路与含浦中路交汇处",
+                "gridcode": "4212176300",
+                "location": "112.91288,28.133142"
+            }
+        ]
+        var map = new AMap.Map('container', {
+            features: ['bg', 'road'],
+            mapStyle: 'amap://styles/midnight',
+            pitch: 50,
+            zoom: 10,
+            viewMode: '3D'
+        });
+
+        map.setCenter([113, 28.4]);
+
+        var layer = new Loca.ScatterPointLayer({
+            map: map
+        });
+
+        // console.log(heatGrid)
+        var list = dataJSON.map(function (item) {
+            // var val = value.split('$');
+            // var value = []
+            return {
+                coord: item.location,
+                value: item.price ? item.price / 100 : 0,
+            }
+        });
+
+        console.log(list) // {coord: "116.227487603,40.1206120612", value: 234} //坐标 , 值
+        layer.setData(list, {
+            lnglat: 'coord'
+        });
+
+        var colors = [
+            '#2c7bb6',
+            '#abd9e9',
+            '#ffffbf',
+            '#fdae61',
+            '#d7191c'
+        ];
+
+        layer.setOptions({
+            // 单位米
+            unit: 'meter',
+            style: {
+                // 正多边形半径
+                radius: 400,
+                // 高度为 0 即可贴地面
+                height: {
+                    key: 'value',
+                    scale: 'linear',
+                    value: [0, 40000]
+                },
+                // 顶面颜色
+                color: {
+                    key: 'value',
+                    scale: 'quantile',
+                    value: colors
+                },
+                opacity: 0.85
+            }
+        });
+
+        layer.render();
+    })
+
+
+</script>
