@@ -1,0 +1,59 @@
+<%- include('../layout/header') %>
+<%- include('../layout/nav') %>
+
+<div class="logAnalysis-container">
+
+    <div class="form-group">
+        <label for="problemType">问题类型</label>
+        <select class="form-control" id="problemType">
+            <option value="miss">打印漏单</option>
+            <option value="repeat">重复打印</option>
+            <!-- <option>3</option>
+            <option>4</option>
+            <option>5</option> -->
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="logInputFile">日志文件</label>
+        <input type="file" id="logInputFile">
+        <!-- <p class="help-block">Example block-level help text here.</p> -->
+    </div>
+
+    <div class="form-group">
+        <input type="date" class="form-control">
+        <input type="time" class="form-control">
+    </div>
+
+
+    <a class="btn btn-primary" id="submit">提交</a>
+</div>
+
+<%- include('../layout/footer') %>
+
+<script>
+    $(function () {
+        $("title").text("日志收集");
+
+        $("#submit").click((event) => {
+            let formData = new FormData();
+            let obj = {
+                problemType: $("#problemType").val()
+            }
+
+            formData.append("file", $("#logInputFile")[0].files[0]); //传给后台的file的key值是可以自己定义的
+            formData.append("data", JSON.stringify(obj));
+            // console.log($("#logInputFile")[0].files[0])
+            $.ajax({
+                type: "POST",
+                url: "/upload/log",
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: (resp) => {
+                    console.log(resp)
+                }
+            })
+        })
+    })
+</script>

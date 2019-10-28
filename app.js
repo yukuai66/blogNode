@@ -16,6 +16,7 @@ const contact = require('./routes/contact');
 const manage = require('./routes/manage');
 const edit = require('./routes/edit');
 const upload = require('./routes/upload');
+const logAnalysis = require('./routes/logAnalysis');
 
 // var connectHistoryApiFallback = require('connect-history-api-fallback');
 const app = express();
@@ -39,6 +40,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// 引用最后的静态文件
+// app.use(express.static(path.join(__dirname, 'views')))
+// app.get('/', function (req, res) {
+//   res.sendFile('./views/index.html')
+// })
 
 
 // 处理表单及文件上传的中间件
@@ -70,6 +77,7 @@ app.use('/contact', contact);
 app.use('/manage', manage);
 app.use('/edit', edit);
 app.use('/upload', upload);
+app.use('/logAnalysis', logAnalysis);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
