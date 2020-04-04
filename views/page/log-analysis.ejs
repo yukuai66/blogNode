@@ -1,0 +1,74 @@
+<%- include('../layout/header') %>
+<%- include('../layout/nav') %>
+
+<div class="logAnalysis-container">
+
+    <div class="form-group">
+        <span for="problemType">问题类型:</span>
+        <select class="form-control" id="problemType" style="width: 40%;display: inline-block;">
+            <option value="miss">打印漏单</option>
+            <option value="repeat">重复打印</option>
+            <option value="outOfOrder">打印乱序</option>
+            <option value="getMissOrder">获取漏单单号</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <span>日志文件: </span>
+        <input type="file" id="logInputFile" style="width: 40%;display: inline-block;">
+    </div>
+
+    <div class="form-group">
+        <span>开始时间: </span>
+        <input id="startDate" name="startDate" type="date" class="form-control" style="width: 40%;display: inline-block;">
+        <input id="startTime" name="startTime" type="time" class="form-control" style="width: 40%;display: inline-block;">
+    </div>
+
+    <div class="form-group">
+        <span>结束时间: </span>
+        <input id="endDate" name="endDate" type="date" class="form-control" style="width: 40%;display: inline-block;">
+        <input id="endTime" name="endTime" type="time" class="form-control" style="width: 40%;display: inline-block;">
+    </div>
+
+
+    <a class="btn btn-primary" id="submit">提交</a>
+</div>
+
+<%- include('../layout/footer') %>
+
+<script>
+    $(function () {
+        $("title").text("日志收集");
+
+        $("#submit").click((event) => {
+            let formData = new FormData();
+
+            let obj = {
+                problemType: $("#problemType").val(),
+                startDate: `${$("#startDate").val()} ${$("#startTime").val()}`,
+                endDate: `${$("#endDate").val()} ${$("#endTime").val()}`,
+            }
+
+            //测试用数据todo
+            // obj.startDate = "2019-09-26 09:21:58";
+            // obj.endDate = "2019-09-26 09:27:01";
+
+            // 常龙时间
+            obj.startDate = "2019-10-30 01:00:00";
+            obj.endDate = "2019-10-30 23:59:59";
+
+            formData.append("file", $("#logInputFile")[0].files[0]); //传给后台的file的key值是可以自己定义的
+            formData.append("data", JSON.stringify(obj));
+            $.ajax({
+                type: "POST",
+                url: "/upload/log",
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: (resp) => {
+                    console.log(resp)
+                }
+            })
+        })
+    })
+</script>
