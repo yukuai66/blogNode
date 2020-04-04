@@ -774,3 +774,10 @@ footer .footer-copyright {
 .details-content p {
   color: #333;
 }
+
+/* log-analysis */
+
+.logAnalysis-container {
+  width: 600px;
+  margin: auto;
+}
