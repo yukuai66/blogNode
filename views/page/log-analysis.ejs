@@ -20,14 +20,21 @@
 
     <div class="form-group">
         <span>开始时间: </span>
-        <input id="startDate" name="startDate" type="date" class="form-control" style="width: 40%;display: inline-block;">
-        <input id="startTime" name="startTime" type="time" class="form-control" style="width: 40%;display: inline-block;">
+        <input id="startDate" name="startDate" type="date" class="form-control"
+            style="width: 40%;display: inline-block;">
+        <input id="startTime" name="startTime" type="time" class="form-control"
+            style="width: 40%;display: inline-block;">
     </div>
 
     <div class="form-group">
         <span>结束时间: </span>
         <input id="endDate" name="endDate" type="date" class="form-control" style="width: 40%;display: inline-block;">
         <input id="endTime" name="endTime" type="time" class="form-control" style="width: 40%;display: inline-block;">
+    </div>
+
+    <div class="form-group">
+        <span>漏单运单号: </span>
+        <input id="sids" class="form-control" style="width: 40%;display: inline-block;">
     </div>
 
 
@@ -43,19 +50,20 @@
         $("#submit").click((event) => {
             let formData = new FormData();
 
+            // let obj = {
+            //     problemType: $("#problemType").val(),
+            //     startDate: `${$("#startDate").val()} ${$("#startTime").val()}`,
+            //     endDate: `${$("#endDate").val()} ${$("#endTime").val()}`,
+            //     sids: $("#sids").val(),
+            // }
+
+            //测试用数据
             let obj = {
-                problemType: $("#problemType").val(),
-                startDate: `${$("#startDate").val()} ${$("#startTime").val()}`,
-                endDate: `${$("#endDate").val()} ${$("#endTime").val()}`,
+                problemType: "repeat",
+                startDate: "2019-09-26 09:26:57",
+                endDate: "2019-09-26 09:28:01",
+                sids: "773005867153821,TT6600335296334,4301047115632",
             }
-
-            //测试用数据todo
-            // obj.startDate = "2019-09-26 09:21:58";
-            // obj.endDate = "2019-09-26 09:27:01";
-
-            // 常龙时间
-            obj.startDate = "2019-10-30 01:00:00";
-            obj.endDate = "2019-10-30 23:59:59";
 
             formData.append("file", $("#logInputFile")[0].files[0]); //传给后台的file的key值是可以自己定义的
             formData.append("data", JSON.stringify(obj));

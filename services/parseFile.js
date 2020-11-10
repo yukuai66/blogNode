@@ -3,60 +3,66 @@ const readline = require('readline');
 const moment = require('moment');
 
 module.exports = class ParseFile {
-
     constructor(file, params = {}) {
         this.file = file;
         this.timeSpecified = 1569461218000;
-        this.limitTime = 0; //指定需要的时间段 毫秒
+        this.limitTime = 0; //偏差时间.
         this.startTime = moment(params.startDate).format("x") - this.limitTime; //开始时间
         this.endTime = moment(params.endDate).format("x") - this.limitTime; //结束时间
-
+        this.sidList = params.sids ? this.formatSids(params.sids.split(",")) : ""; //漏单单号
         /**
-        * params参数注释
+        * params 参数注释
         * @param {String} params.problemType [问题类型]
         * @param {String} params.startTime []
         */
         this.params = params;
 
-
         this.errorInfo = [{
             type: "miss",   //漏单
             keyword: [{
                 text: "另一个程序正在使用此文件，进程无法访问。",
-                returnMessage: "有其它程序占用打印驱动,请关闭影响打印进程的程序",
+                returnMessage: "有其它程序占用打印驱动,关闭影响打印进程的程序,例如:拼多多打印控件等.",
+            }, {
+                text: "Failed to get data + templateURL or printXML",
+                returnMessage: "获取模版失败.重装控件",
+            }, {
+                text: "无效的加密数据",
+                returnMessage: `打印问题群@打印助手回复"无效的加密数据"`,
+            }, {
+                text: "打印渲染失败",
+                returnMessage: `打印问题群@打印助手回复"打印渲染失败"`,
+            }, {
+                text: "Client disconnected",
+                returnMessage: `打印问题群@打印助手回复"控件断开链接"`,
             }],
         }, {
             type: "repeat",   //重复打印
-            keyword: [{
-                returnMessage: "未找到重复订单请排查打印机",
-            }],
         }, {
             type: "outOfOrder",   //乱序
-            keyword: [{
-                returnMessage: "",
-            }]
         }];
     }
 
     async getFileErrorMessage() {
-        let returnMessage;
         let dataList = await this.getPeriodTimeList();
-
+        let returnMessage;
         switch (this.params.problemType) {
             case "miss":
                 returnMessage = this.getMissErrorMessage(dataList);
                 break;
             case "repeat":
-                returnMessage = this.getRepeatErrorMessage(dataList);
-                break
-            case "getMissOrder":
-                returnMessage = this.getMissingOrderNumber(dataList);
-                break
+                returnMessage = this.getMissErrorMessage(dataList);
+                break;
+            case "outOfOrder":
+                errorList = this.getMissErrorMessage(dataList);
+                break;
             default:
-                returnMessage = [];
+                errorList = [];
                 break;
         }
-        return returnMessage;
+        return {
+            returnMessage,
+            sidList: this.sidList,
+        };
     }
 
     /**
@@ -76,8 +82,8 @@ module.exports = class ParseFile {
 
 
             rd.on('line', (line) => {
-                let time = moment(line.match(/\d{4}-\d{1,2}-\d{1,2}\s\d{1,2}\:\d{1,2}\:\d{1,2}/)[0]).format('x'); //截取时间的正则
-                if (time > this.startTime && time < this.endTime) {
+                let time = Number(moment(line.match(/\d{4}-\d{1,2}-\d{1,2}\s\d{1,2}\:\d{1,2}\:\d{1,2}/)[0]).format('x')); //截取当前时间;
+                if (Number(time) > this.startTime && Number(time) < this.endTime) {
                     let date = moment(Number(time)).format("YYYY-MM-DD HH:mm:ss");
                     infoList.push({
                         date: date,
@@ -87,9 +93,7 @@ module.exports = class ParseFile {
 
                 if (time > this.endTime) {
                     rd.close();
-                    // resolve(infoList);
                 }
-
             });
 
             rd.on("close", function () {
@@ -106,44 +110,115 @@ module.exports = class ParseFile {
      */
     getMissErrorMessage(data) {
         let { keyword } = this.errorInfo.find(obj => obj.type === "miss"); //获订单漏单取错误信息列表
-        let errorInfoList = [];
+        let errorInfoList = []; //有错误信息的行
+        // let sidsList = this.sids;
+        // let hadBeenFoundList = [];
         data.map(lineObj => {
+
+            //获取到有json字符串那行.可以用来解析打印状态
+            if (lineObj.text.indexOf("sent msg:") != -1) {
+                let data = this.getSentLineData(lineObj.text);
+                this.setSidState(data, lineObj);
+            }
+
             keyword.map(item => {
                 if (lineObj.text.indexOf(item.text) > -1) {
                     errorInfoList.push(`${lineObj.date}: ${item.returnMessage}`);
                 };
             });
-        })
+        });
         return errorInfoList;
     }
 
-    /**
-     * 获取重复打印问题错误信息
-     * @param {Array} data [需要查找的日志]
-     * @returns {Array}
-     */
-    getRepeatErrorMessage(data) {
+    // /**
+    //  * 获取重复打印问题错误信息
+    //  * @param {Array} data [需要查找的日志]
+    //  * @returns {Array}
+    //  */
+    // getRepeatErrorMessage(data) {
+    //     let { keyword } = this.errorInfo.find(obj => obj.type === "miss"); //获订单漏单取错误信息列表
+    //     let errorInfoList = []; //有错误信息的行
+    //     // let sidsList = this.sids;
+    //     // let hadBeenFoundList = [];
+    //     data.map(lineObj => {
 
+    //         keyword.map(item => {
+    //             //获取到有json字符串那行.可以用来解析打印状态
+    //             if (lineObj.text.indexOf("sent msg:") != -1) {
+    //                 let data = this.getSentLineData(lineObj.text);
+    //                 this.setSidState(data, lineObj);
+    //             }
+
+    //             if (lineObj.text.indexOf(item.text) > -1) {
+    //                 errorInfoList.push(`${lineObj.date}: ${item.returnMessage}`);
+    //             };
+    //         });
+    //     });
+    //     return errorInfoList;
+    // }
+
+    /**
+     * 格式化sid列表
+     *
+     * @param {*} sids
+     * @returns
+     */
+    formatSids(sids) {
+        let data = sids.map((sid) => {
+            return {
+                sid,
+                renderTime: null,
+                printTime: null,
+                failTime: null,
+                isPrint: false,
+                isSend: false,
+                isRender: false,
+                isFailed: false,
+                isOutOfOrder: false,
+                printNum: 0,
+            }
+        });
+        return data;
     }
 
     /**
-     * 获取遗漏的单号
-     * @param {Array} data [需要查找的日志]
-     * @returns {Array}
+     * 设置sid状态
+     *
+     * @param {string} data sid字符串
+     * @returns
      */
-    getMissingOrderNumber(data) {
-        let OrderNumbers = ['71696918092434', '71696912143752', '71696919131072', '71696912130839', '71696915131309', '71696917131308', '71696919122001', '71696917102805', '71696913100144', '71696915130932', '71696918092085', '71696910092051', '71696915092077', '71696919094084', '71696910094031', '71696914131079', '71696915131451', '71696915131757', '71696910131359', '71696919131406', '71696916131304', '71696914131767', '71696919131411', '71696912130896', '71696912131400', '71696910131203', '71696910130840', '71696914131456', '71696914131362', '71696915130847', '71696910131038', '71696916130936', '71696918131275', '71696916131361', '71696912131363', '71696913131310', '71696916131498', '71696914131357', '71696919131350', '71696911130934', '71696911131212', '71696914130838', '71696919130893', '71696917131351', '71696918131416', '71696918131204', '71696912131320', '71696911130948', '71696912132881', '71696915140224', '71696915143270', '71696914143751', '71696917154615', '71696917153574', '71696910155133', '71696912092559', '71696912100026', '71696912098783', '71696915100789', '71696915121391', '71696910121911', '71696911124320', '71696911123716', '71696914131300', '71696911131047', '71696915131352', '71696914131041', '71696914143275', '71696918177621', '71696914091912', '71696916091534', '71696914091498', '71696917101170', '71696911102422', '71696915100973', '71696914100978', '71696917101165', '71696914122169', '71696911121977', '71696919131307', '71696914131277', '71696912131301', '71696912131358', '71696914131036', '71696918131077', '71696915131173', '71696914130999', '71696910131284', '71696912131278', '71696911131759', '71696910131364', '71696918131044', '71696910132882', '71696917131271', '71696919131703', '71696912131080', '71696916131709', '71696915131286', '71696914130796', '71696917140591', '71696913143469', '71696919143800', '71696917143269', '71696912153821', '71696918092052', '71696916091322', '71696916091992', '71696917092104', '71696912090796', '71696912091913', '71696918092820', '71696919092103', '71696910093003', '71696914092011', '71696917092806', '71696919091735', '71696913091347', '71696911094083', '71696917092627', '71696918091986', '71696911092102', '71696917092632', '71696917091543', '71696917092095', '71696912092470', '71696919092612', '71696917092076', '71696918099044', '71696918102541', '71696916102815', '71696919100546', '71696911112831', '71696916112838', '71696915113131', '71696913113288', '71696910113237', '71696913112830', '71696918123379', '71696913121636', '71696911122255', '71696912122311', '71696915121635', '71696916121847', '71696913121641', '71696914131282', '71696918130997', '71696911131274', '71696919124321', '71696913121387', '71696917122200', '71696910122005', '71696917121639', '71696911121642', '71696912131607', '71696916131163', '71696913131305', '71696911131306', '71696917130945', '71696919131270', '71696918131402', '71696913131414', '71696912131075', '71696911131288', '71696910131316', '71696916131318', '71696912130943', '71696918130935', '71696911131354', '71696917131474', '71696918130799', '71696910131279', '71696911130849', '71696919131425', '71696916130941', '71696913131621', '71696918131119', '71696919131312', '71696912131315', '71696919130794', '71696917131068', '71696918131355', '71696911131467', '71696917131469', '71696912131160', '71696916131479', '71696919131430', '71696915131465', '71696914130843', '71696914131480', '71696917131365', '71696918130898', '71696917131313', '71696915131125', '71696910130996', '71696917131209', '71696914131319', '71696914130895', '71696914131164', '71696913131353', '71696914131418', '71696913131409', '71696913131372', '71696917130931', '71696919131369', '71696913131174', '71696911131472', '71696911131269', '71696910131750', '71696911131429', '71696917131285', '71696915130946', '71696911131033', '71696917130846', '71696917131087', '71696916131276', '71696911131311', '71696911131207', '71696916131554', '71696915140484', '71696915140587', '71696919140482', '71696915143468', '71696911142748', '71696911143149', '71696912143276', '71696911143470', '71696911092593', '71696912091994', '71696913092592', '71696918113403', '71696919121643', '71696915132511', '71696910131156', '71696910131076', '71696918131303', '71696914092474', '71696919091349', '71696914091648', '71696910092433', '71696911091739', '71696918092561', '71696913091738', '71696914091342', '71696918092556', '71696918094027', '71696912094167', '71696917094551', '71696912094704', '71696910094173', '71696918100028', '71696910094125', '71696910102540', '71696915102806', '71696910113402', '71696911121637', '71696917122002', '71696910123236', '71696916130795', '71696917131073', '71696916131460', '71696912130797', '71696913131070', '71696910131401', '71696918131322', '71696914131159', '71696919131454', '71696916131120', '71696912131283', '71696913131452', '71696916131417', '71696911131127', '71696919130930', '71696911131071', '71696917133171', '71696918131124', '71696918131157', '71696918131421', '71696918131464', '71696916131403', '71696917130894', '71696914131461', '71696917132510', '71696915131272', '71696910130897', '71696910130798', '71696916130998', '71696918130841', '71696912131457', '71696915131408', '71696914130937', '71696915131074', '71696915131314', '71696910131302', '71696916131356', '71696913131126', '71696913131211', '71696918131280', '71696912130938', '71696916130899', '71696916131281', '71696913131287', '71696913130933', '71696910131420', '71696913131206', '71696915140479', '71696912140485', '71696913143271', '71696917142745', '71696917141270', '71696913143803', '71696911143465', '71696913142747', '71696915142746'];
-        let missOrderNumbers = [];
-        OrderNumbers.map(num => {
-            let testList = data.filter(x => x.text.indexOf(num) > -1);
-            if (testList.length === 0) {
-                missOrderNumbers.push(`${num} 0`);
-            } else {
-                missOrderNumbers.push(`${num} ${num.length}`);
-            }
-        })
+    setSidState(taskObj, lineData) {
+        //cmd === "print" 为打印指令 用来判断系统是否送打印机但是需要菜鸟的taskID 不太好精准获取todo;
+        //cmd === "notifyPrintResult" 为菜鸟反馈的打印结果redner为正常渲染 printed为正常打印;
+        let { taskStatus, cmd, printStatus } = taskObj;
 
-        console.log(missOrderNumbers)
-        return missOrderNumbers;
+        //是否为打印任务指令结果
+        if (cmd != "notifyPrintResult") return false;
+
+        printStatus.map(item => {
+            let sidItem = this.sidList.find(sidData => sidData.sid === item.documentID);
+            if (!sidItem) return;
+            if (taskStatus === 'rendered' && !sidItem.isFailed) {
+                sidItem.isSend = true;
+                sidItem.isRender = true;
+                sidItem.renderTime = lineData.date;
+            };
+
+            if (taskStatus === "printed" && !sidItem.isFailed) {
+                sidItem.isPrint = true;
+                sidItem.printNum++;
+                sidItem.printTime = lineData.date;
+            };
+
+            if (taskStatus === "failed") {
+                sidItem.isFailed = true;
+                sidItem.failTime = lineData.date;
+            }
+        });
+    }
+
+    getSentLineData(str) {
+        let taskObj = JSON.parse(JSON.parse(str.split("sent msg:")[1]));
+        return taskObj;
     }
 };
