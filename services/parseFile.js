@@ -53,10 +53,10 @@ module.exports = class ParseFile {
                 returnMessage = this.getMissErrorMessage(dataList);
                 break;
             case "outOfOrder":
-                errorList = this.getMissErrorMessage(dataList);
+                returnMessage = this.getMissErrorMessage(dataList);
                 break;
             default:
-                errorList = [];
+                returnMessage = this.getMissErrorMessage(dataList);
                 break;
         }
         return {

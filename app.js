@@ -2,19 +2,19 @@ const express = require('express');
 const path = require('path');
 const favicon = require('serve-favicon');
 const logger = require('morgan');
-const cookieParser = require('cookie-parser');
+// const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const config = require('config-lite')(__dirname)
-const MongoStore = require('connect-mongo')(session)
-const multer = require('multer');
+// const config = require('config-lite')(__dirname)
+// const MongoStore = require('connect-mongo')(session)
+// const multer = require('multer');
 
 const index = require('./routes/index');
-const users = require('./routes/users');
-const article = require('./routes/article');
-const contact = require('./routes/contact');
-const manage = require('./routes/manage');
-const edit = require('./routes/edit');
+// const users = require('./routes/users');
+// const article = require('./routes/article');
+// const contact = require('./routes/contact');
+// const manage = require('./routes/manage');
+// const edit = require('./routes/edit');
 const upload = require('./routes/upload');
 const logAnalysis = require('./routes/logAnalysis');
 
@@ -38,7 +38,7 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
+// app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 引用最后的静态文件
@@ -55,27 +55,27 @@ app.use(express.static(path.join(__dirname, 'public')));
 // }))
 
 // session 中间件
-app.use(session({
-  name: config.session.key, // 设置 cookie 中保存 session id 的字段名称
-  secret: config.session.secret, // 通过设置 secret 来计算 hash 值并放在 cookie 中，使产生的 signedCookie 防篡改
-  resave: true, // 强制更新 session
-  saveUninitialized: false, // 设置为 false，强制创建一个 session，即使用户未登录
-  cookie: {
-    maxAge: config.session.maxAge// 过期时间，过期后 cookie 中的 session id 自动删除
-  },
-  store: new MongoStore({// 将 session 存储到 mongodb
-    url: config.mongodb.url// mongodb 地址
-  })
-}));
+// app.use(session({
+//   name: config.session.key, // 设置 cookie 中保存 session id 的字段名称
+//   secret: config.session.secret, // 通过设置 secret 来计算 hash 值并放在 cookie 中，使产生的 signedCookie 防篡改
+//   resave: true, // 强制更新 session
+//   saveUninitialized: false, // 设置为 false，强制创建一个 session，即使用户未登录
+//   cookie: {
+//     maxAge: config.session.maxAge// 过期时间，过期后 cookie 中的 session id 自动删除
+//   },
+//   store: new MongoStore({// 将 session 存储到 mongodb
+//     url: config.mongodb.url// mongodb 地址
+//   })
+// }));
 
 //router
 app.use('/', index);
-app.use('/index', index);
-app.use('/users', users);
-app.use('/article', article);
-app.use('/contact', contact);
-app.use('/manage', manage);
-app.use('/edit', edit);
+// app.use('/index', index);
+// app.use('/users', users);
+// app.use('/article', article);
+// app.use('/contact', contact);
+// app.use('/manage', manage);
+// app.use('/edit', edit);
 app.use('/upload', upload);
 app.use('/logAnalysis', logAnalysis);
 
