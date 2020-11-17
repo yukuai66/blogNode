@@ -82,6 +82,13 @@ module.exports = class ParseFile {
 
 
             rd.on('line', (line) => {
+                if(line.indexOf("773005867152827") > -1){
+                    console.log("1");
+                }
+
+                if(line.indexOf("773005867213162") > -1){
+                    console.log("1");
+                }
                 let time = Number(moment(line.match(/\d{4}-\d{1,2}-\d{1,2}\s\d{1,2}\:\d{1,2}\:\d{1,2}/)[0]).format('x')); //截取当前时间;
                 if (Number(time) > this.startTime && Number(time) < this.endTime) {
                     let date = moment(Number(time)).format("YYYY-MM-DD HH:mm:ss");
@@ -174,7 +181,7 @@ module.exports = class ParseFile {
                 isSend: false,
                 isRender: false,
                 isFailed: false,
-                isOutOfOrder: false,
+                isOutOfOrder: false,  //是否乱序 //todo 这里可以用send render printed 时间做区分
                 printNum: 0,
             }
         });

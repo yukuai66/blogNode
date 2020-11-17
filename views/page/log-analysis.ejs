@@ -3,7 +3,7 @@
 
 <div class="logAnalysis-container">
 
-    <div class="form-group">
+    <!-- <div class="form-group">
         <span for="problemType">问题类型:</span>
         <select class="form-control" id="problemType" style="width: 40%;display: inline-block;">
             <option value="miss">打印漏单</option>
@@ -11,13 +11,7 @@
             <option value="outOfOrder">打印乱序</option>
             <option value="getMissOrder">获取漏单单号</option>
         </select>
-    </div>
-
-    <div class="form-group">
-        <span>日志文件: </span>
-        <input type="file" id="logInputFile" style="width: 40%;display: inline-block;">
-    </div>
-
+    </div> -->
     <div class="form-group">
         <span>开始时间: </span>
         <input id="startDate" name="startDate" type="date" class="form-control"
@@ -33,12 +27,20 @@
     </div>
 
     <div class="form-group">
-        <span>漏单运单号: </span>
+        <span>需要查询的运单号: </span>
         <input id="sids" class="form-control" style="width: 40%;display: inline-block;">
     </div>
 
+    <div class="form-group">
+        <span>日志文件: </span>
+        <input type="file" id="logInputFile" style="width: 40%;display: inline-block;">
+    </div>
 
     <a class="btn btn-primary" id="submit">提交</a>
+
+    <div class="error-info-container">
+
+    </div>
 </div>
 
 <%- include('../layout/footer') %>
@@ -47,13 +49,39 @@
     $(function () {
         $("title").text("日志收集");
 
+        function renderErrorContent(data) {
+            let tipsContent = "";
+            data.returnMessage.map((item) => {
+                tipsContent += `<p>${item}</p>`
+            })
+
+            let sidListContent = "";
+            data.sidList.map((item) => {
+                sidListContent += `
+                    <p style="border: 1px solid #ccc;padding: 5px;color: #000;">
+                        <span class="sid-list-item">${item.sid}</span></br>
+                        <span class="sid-list-item">渲染时间:${item.renderTime}</span></br>
+                        <span class="sid-list-item">打印时间:${item.printTime}</span></br>
+                        <span class="sid-list-item">失败时间:${item.failTime}</span></br>
+                        <span class="sid-list-item">系统是否正常送控件:${item.isSend ? "是" : "否"}</span></br>
+                        <span class="sid-list-item">控件是否正常渲染:${item.isRender ? "是" : "否"}</span></br>
+                        <span class="sid-list-item">控件是否正常打印:${item.isPrint ? "是" : "否"}</span></br>
+                        <span class="sid-list-item">控件是否提示失败:${item.isFailed ? "是" : "否"}</span></br>
+                        <span class="sid-list-item">时间段内打印次数:${item.printNum}</span>
+                    </p>
+                `
+            });
+
+            return tipsContent + sidListContent;
+        }
+
         $("#submit").click((event) => {
             let formData = new FormData();
 
             // let obj = {
-            //     problemType: $("#problemType").val(),
-            //     startDate: `${$("#startDate").val()} ${$("#startTime").val()}`,
-            //     endDate: `${$("#endDate").val()} ${$("#endTime").val()}`,
+            //     startDate: `${$("#startDate").val()} ${$("#startTime").val()}:00`,
+            //     endDate: `${$("#endDate").val()} ${$("#endTime").val()}:59`,
+            //     problemType: $("#problemType").val() || "repeat",
             //     sids: $("#sids").val(),
             // }
 
@@ -66,6 +94,7 @@
             }
 
             formData.append("file", $("#logInputFile")[0].files[0]); //传给后台的file的key值是可以自己定义的
+            debugger
             formData.append("data", JSON.stringify(obj));
             $.ajax({
                 type: "POST",
@@ -73,10 +102,42 @@
                 processData: false,
                 contentType: false,
                 data: formData,
+                timeout: 600000,
                 success: (resp) => {
-                    console.log(resp)
+                    // console.log(resp)
+                    let errorContent = renderErrorContent(resp.errorList);
+                    $(".error-info-container").html(errorContent);
                 }
             })
+        });
+        
+        $("#logInputFile").change((event) => {
+            var input = event.target;
+            var reader = new FileReader();
+            reader.onload = function () {
+                if (reader.result) {
+                    //显示文件内容
+                    reader.result = "11213311";
+                    // debugger
+                }
+            };
+            reader.readAsText(input.files[0]);
         })
+        // var openFile = function (event) {
+        //     var input = event.target;
+        //     var reader = new FileReader();
+        //     reader.onload = function () {
+        //         if (reader.result) {
+        //             debugger
+        //             //显示文件内容
+        //             // $("#output").html(reader.result);
+        //         }
+        //     };
+        //     reader.readAsText(input.files[0]);
+        // };
+
+
+
+        // $(".error-info-container").html()
     })
 </script>

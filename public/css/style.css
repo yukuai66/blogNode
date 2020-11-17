@@ -780,4 +780,9 @@ footer .footer-copyright {
 .logAnalysis-container {
   width: 600px;
   margin: auto;
+  
+}
+
+.logAnalysis-container .error-info-container .sid-list-item{
+    
 }
