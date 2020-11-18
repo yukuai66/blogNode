@@ -33,7 +33,7 @@ router.post('/image', upload.single("imageFile"), function (req, res, next) {
 
 router.post('/log', uploadLog.single("file"), function (req, res, next) {
     let parseFile = new ParseFile(req.file, JSON.parse(req.body.data));
-    parseFile.getFileErrorMessage().then(errorList => {
+    parseFile.main().then(errorList => {
         res.send({
             errorList: errorList
         });

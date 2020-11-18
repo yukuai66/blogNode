@@ -1,12 +1,14 @@
 const fs = require("fs");
 const readline = require('readline');
 const moment = require('moment');
+const path = require('path');
 
 module.exports = class ParseFile {
     constructor(file, params = {}) {
         this.file = file;
         this.timeSpecified = 1569461218000;
         this.limitTime = 0; //偏差时间.
+        this.splitFilePathList = [];
         this.startTime = moment(params.startDate).format("x") - this.limitTime; //开始时间
         this.endTime = moment(params.endDate).format("x") - this.limitTime; //结束时间
         this.sidList = params.sids ? this.formatSids(params.sids.split(",")) : ""; //漏单单号
@@ -42,23 +44,15 @@ module.exports = class ParseFile {
         }];
     }
 
-    async getFileErrorMessage() {
+    async main() {
+        //先将文件切割.64kb一份(笑)
+        await this.fileSplit(this.file.path, 1024 * 64, "public/", '.log');
+
+        //格式化每个文件的属性
+        await this.formatFileAttribute();
+
         let dataList = await this.getPeriodTimeList();
-        let returnMessage;
-        switch (this.params.problemType) {
-            case "miss":
-                returnMessage = this.getMissErrorMessage(dataList);
-                break;
-            case "repeat":
-                returnMessage = this.getMissErrorMessage(dataList);
-                break;
-            case "outOfOrder":
-                returnMessage = this.getMissErrorMessage(dataList);
-                break;
-            default:
-                returnMessage = this.getMissErrorMessage(dataList);
-                break;
-        }
+        let returnMessage = this.getErrorMessage(dataList);
         return {
             returnMessage,
             sidList: this.sidList,
@@ -72,6 +66,7 @@ module.exports = class ParseFile {
      */
     getPeriodTimeList() {
         return new Promise((resolve) => {
+            this.formatFileAttribute();
             let rd = readline.createInterface({
                 input: fs.createReadStream(this.file.path),
                 output: process.stdout,
@@ -80,15 +75,14 @@ module.exports = class ParseFile {
 
             let infoList = [];
 
-
             rd.on('line', (line) => {
-                if(line.indexOf("773005867152827") > -1){
-                    console.log("1");
-                }
+                // if (line.indexOf("773005867152827") > -1) {
+                //     console.log("1");
+                // }
 
-                if(line.indexOf("773005867213162") > -1){
-                    console.log("1");
-                }
+                // if (line.indexOf("773005867213162") > -1) {
+                //     console.log("1");
+                // }
                 let time = Number(moment(line.match(/\d{4}-\d{1,2}-\d{1,2}\s\d{1,2}\:\d{1,2}\:\d{1,2}/)[0]).format('x')); //截取当前时间;
                 if (Number(time) > this.startTime && Number(time) < this.endTime) {
                     let date = moment(Number(time)).format("YYYY-MM-DD HH:mm:ss");
@@ -107,7 +101,10 @@ module.exports = class ParseFile {
                 // 结束程序
                 resolve(infoList);
             });
+        }).catch(err => {
+            console.log(err)
         })
+
     }
 
     /**
@@ -115,7 +112,7 @@ module.exports = class ParseFile {
      * @param {Array} data [需要查找的日志]
      * @returns {Array}
      */
-    getMissErrorMessage(data) {
+    getErrorMessage(data) {
         let { keyword } = this.errorInfo.find(obj => obj.type === "miss"); //获订单漏单取错误信息列表
         let errorInfoList = []; //有错误信息的行
         // let sidsList = this.sids;
@@ -136,33 +133,6 @@ module.exports = class ParseFile {
         });
         return errorInfoList;
     }
-
-    // /**
-    //  * 获取重复打印问题错误信息
-    //  * @param {Array} data [需要查找的日志]
-    //  * @returns {Array}
-    //  */
-    // getRepeatErrorMessage(data) {
-    //     let { keyword } = this.errorInfo.find(obj => obj.type === "miss"); //获订单漏单取错误信息列表
-    //     let errorInfoList = []; //有错误信息的行
-    //     // let sidsList = this.sids;
-    //     // let hadBeenFoundList = [];
-    //     data.map(lineObj => {
-
-    //         keyword.map(item => {
-    //             //获取到有json字符串那行.可以用来解析打印状态
-    //             if (lineObj.text.indexOf("sent msg:") != -1) {
-    //                 let data = this.getSentLineData(lineObj.text);
-    //                 this.setSidState(data, lineObj);
-    //             }
-
-    //             if (lineObj.text.indexOf(item.text) > -1) {
-    //                 errorInfoList.push(`${lineObj.date}: ${item.returnMessage}`);
-    //             };
-    //         });
-    //     });
-    //     return errorInfoList;
-    // }
 
     /**
      * 格式化sid列表
@@ -227,5 +197,72 @@ module.exports = class ParseFile {
     getSentLineData(str) {
         let taskObj = JSON.parse(JSON.parse(str.split("sent msg:")[1]));
         return taskObj;
+    }
+
+    /**
+     * 分割文件
+     *
+     * @param {string} inputFile 需要拆分文件路径
+     * @param {number} splitSize 需要拆分的文件大小
+     * @param {string} outPath  输出文件路径
+     * @param {string} ext  文件格式(可选)
+     * @returns
+     */
+    fileSplit(inputFile, splitSize, outPath, ext) {
+        let i = 0;
+        let fileName = this.file.filename;
+        function copy(start, end, size) {
+            return new Promise((resolve, reject) => {
+                if (start >= size) {
+                    resolve()
+                } else {
+                    if (end > size - 1) { end = size - 1 }
+                    const readStream = fs.createReadStream(inputFile, { start, end })
+                    let data = Buffer.from([])
+                    readStream.on('data', chunk => {
+                        data = Buffer.concat([data, chunk])
+                    })
+                    readStream.on('end', async () => {
+                        this.splitFilePathList.push(`${fileName}${i + 1}${ext}`);
+                        fs.writeFile(path.join(outPath, `${fileName}${i + 1}${ext}`), data, async err => {
+                            if (err) { reject(err) }
+                            i++
+                            start = end + 1
+                            end = end + splitSize
+                            await copy(start, end, size)
+                            resolve()
+                        })
+                    })
+                    readStream.on('err', err => {
+                        reject(err)
+                    })
+                }
+            })
+        }
+        return new Promise((resolve, reject) => {
+            return fs.stat(inputFile, async (err, stat) => {
+                if (err) { return reject(err) }
+
+                const size = stat.size
+                await copy(0, splitSize - 1, size)
+                resolve(i)
+            })
+        })
+    }
+
+    /**
+     * 格式化拆分后的文件属性
+     *
+     */
+    formatFileAttribute() {
+        // return new Promise(() => {
+
+        // })
+        // let filePromiseList = []
+        // this.splitFilePathList.map((fileName) => {
+        //     filePromiseList.push(new Promise(() => {
+
+        //     }))
+        // })
     }
 };
