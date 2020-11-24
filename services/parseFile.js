@@ -2,13 +2,15 @@ const fs = require("fs");
 const readline = require('readline');
 const moment = require('moment');
 const path = require('path');
+const asyncPool = require('./asyncPool.js');
+const { resolve } = require("path");
 
 module.exports = class ParseFile {
     constructor(file, params = {}) {
         this.file = file;
         this.timeSpecified = 1569461218000;
         this.limitTime = 0; //偏差时间.
-        this.splitFilePathList = [];
+        this.splitFilePathList = []; //分割后的文件列表
         this.startTime = moment(params.startDate).format("x") - this.limitTime; //开始时间
         this.endTime = moment(params.endDate).format("x") - this.limitTime; //结束时间
         this.sidList = params.sids ? this.formatSids(params.sids.split(",")) : ""; //漏单单号
@@ -46,11 +48,10 @@ module.exports = class ParseFile {
 
     async main() {
         //先将文件切割.64kb一份(笑)
-        await this.fileSplit(this.file.path, 1024 * 64, "public/", '.log');
+        await this.fileSplit(this.file.path, 1024 * 64, "public/logFile/", '');
 
         //格式化每个文件的属性
-        await this.formatFileAttribute();
-
+        this.splitFilePathList = await this.formatFileAttribute();
         let dataList = await this.getPeriodTimeList();
         let returnMessage = this.getErrorMessage(dataList);
         return {
@@ -66,45 +67,55 @@ module.exports = class ParseFile {
      */
     getPeriodTimeList() {
         return new Promise((resolve) => {
-            this.formatFileAttribute();
-            let rd = readline.createInterface({
-                input: fs.createReadStream(this.file.path),
-                output: process.stdout,
-                // console: false
-            });
-
-            let infoList = [];
-
-            rd.on('line', (line) => {
-                // if (line.indexOf("773005867152827") > -1) {
-                //     console.log("1");
-                // }
-
-                // if (line.indexOf("773005867213162") > -1) {
-                //     console.log("1");
-                // }
-                let time = Number(moment(line.match(/\d{4}-\d{1,2}-\d{1,2}\s\d{1,2}\:\d{1,2}\:\d{1,2}/)[0]).format('x')); //截取当前时间;
-                if (Number(time) > this.startTime && Number(time) < this.endTime) {
-                    let date = moment(Number(time)).format("YYYY-MM-DD HH:mm:ss");
-                    infoList.push({
-                        date: date,
-                        text: line,
-                    });
+            let fileArr = this.splitFilePathList.filter((item, index) => {
+                let fileStartTime = item.timeStampStart;
+                let endData = this.splitFilePathList[index + 1], fileEndTime;
+                if (endData) {
+                    fileEndTime = endData.timeStampStart
                 };
 
-                if (time > this.endTime) {
-                    rd.close();
+                if ((item.timeStampStart >= this.startTime) || (item.fileEndTime >= this.endTime)) {
+                    return item.path;
                 }
             });
 
-            rd.on("close", function () {
-                // 结束程序
-                resolve(infoList);
-            });
-        }).catch(err => {
-            console.log(err)
-        })
+            this.fileMerge(fileArr).then(newPath => {
+                let rd = readline.createInterface({
+                    input: fs.createReadStream(newPath),
+                    output: process.stdout,
+                    // console: false
+                });
 
+                let infoList = [];
+
+                rd.on('line', (line) => {
+                    let content = line.match(/\d{4}-\d{1,2}-\d{1,2}\s\d{1,2}\:\d{1,2}\:\d{1,2}/);
+                    if (!content) {
+                        return;
+                    }
+
+                    let time = Number(moment(content[0]).format('x')); //截取当前时间;a
+
+                    if (Number(time) > this.startTime && Number(time) < this.endTime) {
+                        let date = moment(Number(time)).format("YYYY-MM-DD HH:mm:ss");
+                        infoList.push({
+                            date: date,
+                            text: line,
+                        });
+                    };
+
+                    if (time > this.endTime) {
+                        rd.close();
+                    }
+                });
+
+                rd.on("close", function () {
+                    // 结束程序
+                    resolve(infoList);
+                });
+            });
+
+        });
     }
 
     /**
@@ -211,7 +222,7 @@ module.exports = class ParseFile {
     fileSplit(inputFile, splitSize, outPath, ext) {
         let i = 0;
         let fileName = this.file.filename;
-        function copy(start, end, size) {
+        let copy = (start, end, size) => {
             return new Promise((resolve, reject) => {
                 if (start >= size) {
                     resolve()
@@ -251,18 +262,77 @@ module.exports = class ParseFile {
     }
 
     /**
+     * 合并文件
+     *
+     */
+    fileMerge(filePathList) {
+        return new Promise((resolve) => {
+            let promiseList = filePathList.map(data => {
+                return new Promise((resolveContent) => {
+                    fs.readFile(data.path, 'utf-8', (err, data) => {
+                        resolveContent(data);
+                    })
+                })
+            });
+
+            Promise.all(promiseList).then(result => {
+                let content = result.join("");
+                let newFilePath = `${this.file.path}Merge`;
+                fs.writeFile(newFilePath, content, () => {
+                    resolve(newFilePath);
+                });
+            })
+        })
+    }
+
+    /**
      * 格式化拆分后的文件属性
      *
      */
     formatFileAttribute() {
-        // return new Promise(() => {
+        return new Promise((resolve) => {
+            let filePromiseList = [];
+            this.splitFilePathList.map((fileName, index) => {
+                filePromiseList.push(new Promise((fileResolve) => {
+                    let splitFilePath = this.file.path + (index + 1);
+                    let fileAttr = {};
+                    let rd = readline.createInterface({
+                        input: fs.createReadStream(splitFilePath),
+                        output: process.stdout,
+                    });
 
-        // })
-        // let filePromiseList = []
-        // this.splitFilePathList.map((fileName) => {
-        //     filePromiseList.push(new Promise(() => {
+                    rd.on('line', (line) => {
+                        let timeString = line.match(/\d{4}-\d{1,2}-\d{1,2}\s\d{1,2}\:\d{1,2}\:\d{1,2}/);
+                        let timeStamp;
+                        if (timeString) {
+                            timeStamp = Number(moment(timeString[0]).format('x'));
+                            fileAttr = {
+                                path: splitFilePath,
+                                timeStart: timeString[0],
+                                timeStampStart: timeStamp,
+                            }
+                            rd.close();
+                        }
+                    });
 
-        //     }))
-        // })
+                    rd.on("close", function () {
+                        // 结束程序
+                        fileResolve(fileAttr);
+                    });
+                }))
+            })
+            new asyncPool(
+                filePromiseList,
+                {
+                    max: 2,
+                    callback: (data, allData) => {
+                        if (allData.length === this.splitFilePathList.length) {
+                            resolve(allData);
+                        }
+                    }
+                }
+            );
+        })
+
     }
 };

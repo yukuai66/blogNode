@@ -87,14 +87,17 @@
 
             //测试用数据
             let obj = {
-                problemType: "repeat",
+                problemType: "miss",
                 startDate: "2019-09-26 09:26:57",
                 endDate: "2019-09-26 09:28:01",
-                sids: "773005867153821,TT6600335296334,4301047115632",
+                sids: "773005867154005",
+                // startDate: "2019-10-15 14:57:13",
+                // endDate: "2019-10-15 15:01:43",
+                // sids: "75304214061992,75304214064170",
+
             }
 
             formData.append("file", $("#logInputFile")[0].files[0]); //传给后台的file的key值是可以自己定义的
-            debugger
             formData.append("data", JSON.stringify(obj));
             $.ajax({
                 type: "POST",
@@ -110,34 +113,5 @@
                 }
             })
         });
-        
-        $("#logInputFile").change((event) => {
-            var input = event.target;
-            var reader = new FileReader();
-            reader.onload = function () {
-                if (reader.result) {
-                    //显示文件内容
-                    reader.result = "11213311";
-                    // debugger
-                }
-            };
-            reader.readAsText(input.files[0]);
-        })
-        // var openFile = function (event) {
-        //     var input = event.target;
-        //     var reader = new FileReader();
-        //     reader.onload = function () {
-        //         if (reader.result) {
-        //             debugger
-        //             //显示文件内容
-        //             // $("#output").html(reader.result);
-        //         }
-        //     };
-        //     reader.readAsText(input.files[0]);
-        // };
-
-
-
-        // $(".error-info-container").html()
     })
 </script>
