@@ -54,6 +54,9 @@ module.exports = class ParseFile {
         this.splitFilePathList = await this.formatFileAttribute();
         let dataList = await this.getPeriodTimeList();
         let returnMessage = this.getErrorMessage(dataList);
+
+        //结束后删除所有文件
+        this.deleteAllFile();
         return {
             returnMessage,
             sidList: this.sidList,
@@ -76,9 +79,13 @@ module.exports = class ParseFile {
 
                 if ((item.timeStampStart >= this.startTime) || (item.fileEndTime >= this.endTime)) {
                     return item.path;
+                };
+
+                //特殊情况. 如果文件小于64kb情况 只会有1个文件 干脆把这个文件送去解析了...不过应该很少出现;
+                if (this.splitFilePathList.length === 1) {
+                    return item.path;
                 }
             });
-
             this.fileMerge(fileArr).then(newPath => {
                 let rd = readline.createInterface({
                     input: fs.createReadStream(newPath),
@@ -119,17 +126,14 @@ module.exports = class ParseFile {
     }
 
     /**
-     * 获取漏单问题错误信息
+     * 获取错误信息
      * @param {Array} data [需要查找的日志]
      * @returns {Array}
      */
     getErrorMessage(data) {
         let { keyword } = this.errorInfo.find(obj => obj.type === "miss"); //获订单漏单取错误信息列表
         let errorInfoList = []; //有错误信息的行
-        // let sidsList = this.sids;
-        // let hadBeenFoundList = [];
         data.map(lineObj => {
-
             //获取到有json字符串那行.可以用来解析打印状态
             if (lineObj.text.indexOf("sent msg:") != -1) {
                 let data = this.getSentLineData(lineObj.text);
@@ -334,5 +338,26 @@ module.exports = class ParseFile {
             );
         })
 
+    }
+
+    deleteAllFile() {
+        fs.unlink(this.file.path, (err) => {
+            if (err) throw err;
+            console.log('success');
+        });
+
+        fs.unlink(`${this.file.path}Merge`, (err) => {
+            if (err) throw err;
+            console.log('success');
+        });
+
+        this.splitFilePathList.map(item => {
+            fs.unlink(item.path, (err) => {
+                if (err) throw err;
+                console.log('success');
+            });
+        });
+
+        
     }
 };
